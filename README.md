@@ -1,6 +1,6 @@
-# SnakeGameAI
+# Snake Game AI with Pygame and PyTorch (Reinforcement Learning)
 
-https://www.youtube.com/watch?v=L8ypSXwyBds - part 4
+A program to teach AI to play Snake Game
 
 Credit(Tutorial): 
 - python-engineer - https://github.com/python-engineer/snake-ai-pytorch
