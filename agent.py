@@ -3,6 +3,8 @@ import random
 import numpy as np
 from collections import deque
 from game import SnakeGameAI, Direction, Point
+from model import Linear_QNet, QTrainer
+from helper import plot
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -12,10 +14,10 @@ class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0 # randomness
-        self.gamma = 0 # discount rate
+        self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = None # TODO
-        self.trainer = None # TODO
+        self.model = Linear_QNet(11, 256, 3) # state, hidden, output
+        self.trainer = QTrainer(self.model, lr= LR, gamma=self.gamma)
 
     def get_state(self, game):
         head = game.snake[0]
@@ -61,7 +63,7 @@ class Agent:
             game.food.y > game.head.y  # food down
             ]
 
-        return np.array(state, dtypr=int)
+        return np.array(state, dtype=int)
 
 
     def remember(self, state, action, reward, next_state, done):
@@ -88,7 +90,7 @@ class Agent:
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)
-            prediction = self.model.predict(state0)
+            prediction = self.model(state0)
             move = torch.argmax(prediction).item()
             final_move[move] = 1
 
@@ -121,17 +123,21 @@ def train():
 
         if done:
             # train long memory, plot result
-            game.result()
+            game.reset()
             agent.n_games += 1
             agent.train_long_memory()
 
             if score > record:
                 record = score
-                # agent.model.save()
+                agent.model.save()
 
             print('Game', agent.n_games, 'Score', score, 'Record:', record)
 
-            # TODO: plot
+            plot_scores.append(score)
+            total_score += score
+            mean_score = total_score / agent.n_games
+            plot_mean_scores.append(mean_score)
+            plot(plot_scores, plot_mean_scores)
 
 
 
